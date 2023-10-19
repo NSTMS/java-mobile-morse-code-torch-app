@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MorseCodeTorchApp"
         tools:targetApi="31">
+
         <activity
             android:name=".DecodeActivity"
             android:exported="false" />
@@ -27,6 +28,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+    </application>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
 </manifest>

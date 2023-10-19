@@ -6,16 +6,30 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
 public class EncodeActivity extends AppCompatActivity {
     private static final String TAG = "EncodeActivity";
     private EditText textView;
     private TextView result;
+    private ImageButton imageButton;
+    private ImageButton cancelButton;
+    private Button show;
+
+    private ClipboardManager clipboardManager;
+
+    private CameraManager cameraManager;
+    private String getCameraID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,6 +37,123 @@ public class EncodeActivity extends AppCompatActivity {
         textView = findViewById(R.id.textView);
         result = findViewById(R.id.textView3);
         result.setOnLongClickListener(v -> copyText());
+        imageButton = findViewById(R.id.imageButton);
+        imageButton.setOnClickListener(v -> pasteFromClipboard());
+        clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+
+        cancelButton = findViewById(R.id.cancelBtn);
+        cancelButton.setOnClickListener(v -> resetTextView());
+
+        show = findViewById(R.id.show);
+        show.setOnClickListener(v -> startTorchSeqence());
+
+        cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        try {
+            getCameraID = cameraManager.getCameraIdList()[0];
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+    private void resetTextView()
+    {
+        textView.setText("");
+    }
+
+    public void startTorchSeqence(){
+        String m = result.getText().toString();
+        if (m.compareTo("") == 0) {
+            try {
+                cameraManager.setTorchMode(getCameraID, true);
+            } catch (CameraAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        String[] morse = m.split(" ");
+        String res = "";
+        String[] code = {".-", "-...", "-.-.", "-..", ".",
+                "..-.", "--.", "....", "..", ".---",
+                "-.-", ".-..", "--", "-.", "---",
+                ".--.", "--.-", ".-.", "...", "-",
+                "..-", "...-", ".--", "-..-", "-.--",
+                "--..", "/"};
+
+        for (int i = 0; i < morse.length; i++) {
+            for (int j = 0; j < code.length; j++) {
+                if (morse[i].compareTo(code[j]) == 0) {
+                    if(morse[i].compareTo("/") == 0)
+                    {
+                        try {
+                            Thread.sleep(700);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    else{
+                        playSequence(code[j]);
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+
+    }
+
+    private void playSequence(String code)  {
+        String[] sequence = code.split("");
+
+        for (int i=0;i< sequence.length;i++)
+        {
+            lightTorch(true);
+            try {
+                switch (sequence[i]) {
+                    case ".":
+                        Thread.sleep(100);
+                        break;
+                    case "-":
+                        Thread.sleep(300);
+                        break;
+                    default:
+                        break;
+                }
+            }catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            lightTorch(false);
+        }
+
+    }
+
+    private void lightTorch(boolean mode)
+    {
+        try {
+            cameraManager.setTorchMode(getCameraID, mode);
+        } catch (CameraAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
+
+    private boolean pasteFromClipboard(){
+        ClipData clipData = clipboardManager.getPrimaryClip();
+        if (clipData != null && clipData.getItemCount() > 0) {
+            ClipData.Item item = clipData.getItemAt(0);
+            CharSequence text = item.getText();
+            if (text != null) {
+                textView.setText(text.toString());
+            } else {
+                textView.setText("");
+            }
+        }
+        return true;
     }
 
     public void encodeText(View v)
@@ -33,14 +164,13 @@ public class EncodeActivity extends AppCompatActivity {
                 'g', 'h', 'i', 'j', 'k', 'l',
                 'm', 'n', 'o', 'p', 'q', 'r',
                 's', 't', 'u', 'v', 'w', 'x',
-                'y', 'z', '1', '2', '3', '4',
-                '5', '6', '7', '8', '9', '0' };
+                'y', 'z',' '};
         String[] code = { ".-",   "-...", "-.-.", "-..",  ".",
                 "..-.", "--.",  "....", "..",   ".---",
                 "-.-",  ".-..", "--",   "-.",   "---",
                 ".--.", "--.-", ".-.",  "...",  "-",
                 "..-",  "...-", ".--",  "-..-", "-.--",
-                "--..", "|" };
+                "--..","/"};
 
         for (int i = 0; i < text.length(); i++) {
             for (int j = 0; j < letter.length; j++) {
@@ -50,6 +180,7 @@ public class EncodeActivity extends AppCompatActivity {
                 }
             }
         }
+        if(res.length() == 0) res = "nieprawidłowe dane wejściowe";
         result.setText(res);
         textView.setText("");
     }

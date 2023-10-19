@@ -11,58 +11,109 @@
         android:gravity="center|center_horizontal|center_vertical"
         android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5pt"
-        android:text="decode"
-        android:textAlignment="center"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:typeface="monospace" />
 
-    <EditText
-        android:id="@+id/textView"
-        android:layout_width="140pt"
-        android:layout_height="wrap_content"
-        android:layout_margin="5pt"
-        android:ems="10"
-        android:gravity="start|top"
-        android:inputType="textMultiLine" />
+        <EditText
+            android:id="@+id/textView"
+            style="@style/Widget.AppCompat.EditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5pt"
+            android:layout_weight="1"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="text to decode"
+            android:inputType="textMultiLine"
+            android:selectAllOnFocus="false"
+            android:singleLine="false"
+            android:textAlignment="center" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5pt"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/pointButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="2dp"
+                    android:background="#00FFFFFF"
+                    android:src="@drawable/point" />
+
+                <ImageButton
+                    android:id="@+id/lineButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="2dp"
+                    android:background="#00FFFFFF"
+                    android:src="@drawable/line" />
+
+                <ImageButton
+                    android:id="@+id/spaceButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="2dp"
+                    android:background="#00FFFFFF"
+                    android:src="@drawable/spaceabr" />
+
+                <ImageButton
+                    android:id="@+id/cancelButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="2dp"
+                    android:background="#00FFFFFF"
+                    android:src="@drawable/cancel" />
+
+                <ImageButton
+                    android:id="@+id/imageButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="2dp"
+                    android:background="#00FFFFFF"
+                    android:src="@drawable/clipboard" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/button3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5pt"
+                    android:onClick="decodeText"
+                    android:text="decode" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5pt"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="decrypted message"
             android:textAlignment="center"
-            android:textAllCaps="true"
+            android:textAllCaps="false"
             android:textSize="20sp" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5pt"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/button3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5pt"
-            android:onClick="changeViewToMainActivity"
-
-            android:text="back" />
-
-        <Button
-            android:id="@+id/button4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5pt"
-            android:onClick="decodeText"
-            android:text="decode" />
-    </LinearLayout>
-
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
