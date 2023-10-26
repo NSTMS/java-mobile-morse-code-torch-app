@@ -76,6 +76,7 @@ public class EncodeActivity extends AppCompatActivity {
         if(isRunning) return;
         isRunning = true;
         progressBar.setMax(0);
+        progressBar.setProgress(0);
         String m = result.getText().toString();
         String[] morse = m.split(" ");
         getPrgs();
