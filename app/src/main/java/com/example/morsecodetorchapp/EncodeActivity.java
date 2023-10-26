@@ -11,9 +11,11 @@ import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -29,7 +31,16 @@ public class EncodeActivity extends AppCompatActivity {
 
     private CameraManager cameraManager;
     private String getCameraID;
+    private ProgressBar progressBar;
 
+    private boolean isRunning;
+    private Thread xd = new Thread();
+    private String[] code = {".-", "-...", "-.-.", "-..", ".",
+            "..-.", "--.", "....", "..", ".---",
+            "-.-", ".-..", "--", "-.", "---",
+            ".--.", "--.-", ".-.", "...", "-",
+            "..-", "...-", ".--", "-..-", "-.--",
+            "--..", "/"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +58,8 @@ public class EncodeActivity extends AppCompatActivity {
         show = findViewById(R.id.show);
         show.setOnClickListener(v -> startTorchSeqence());
 
+        progressBar = findViewById(R.id.progressBar);
+
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
             getCameraID = cameraManager.getCameraIdList()[0];
@@ -60,49 +73,85 @@ public class EncodeActivity extends AppCompatActivity {
     }
 
     public void startTorchSeqence(){
+        if(isRunning) return;
+        isRunning = true;
+        progressBar.setMax(0);
         String m = result.getText().toString();
-        if (m.compareTo("") == 0) {
-            try {
-                cameraManager.setTorchMode(getCameraID, true);
-            } catch (CameraAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
         String[] morse = m.split(" ");
-        String res = "";
-        String[] code = {".-", "-...", "-.-.", "-..", ".",
-                "..-.", "--.", "....", "..", ".---",
-                "-.-", ".-..", "--", "-.", "---",
-                ".--.", "--.-", ".-.", "...", "-",
-                "..-", "...-", ".--", "-..-", "-.--",
-                "--..", "/"};
+        getPrgs();
+
+         xd = new Thread(()->{
+            for (int i = 0; i < morse.length; i++) {
+                for (int j = 0; j < code.length; j++) {
+                    if (morse[i].compareTo(code[j]) == 0) {
+                        if(morse[i].compareTo("/") == 0)
+                        {
+                            progressBar.setProgress( progressBar.getProgress() + 700);
+                            try {
+                                Thread.sleep(700);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        else{
+                            playSequence(code[j]);
+                            progressBar.setProgress( progressBar.getProgress() + 300);
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+            isRunning = false;
+        });
+        xd.start();
+
+    }
+
+
+    public void getPrgs()
+    {
+        int prgs = 0;
+        String m = result.getText().toString();
+        String[] morse = m.split(" ");
 
         for (int i = 0; i < morse.length; i++) {
             for (int j = 0; j < code.length; j++) {
                 if (morse[i].compareTo(code[j]) == 0) {
-                    if(morse[i].compareTo("/") == 0)
-                    {
-                        try {
-                            Thread.sleep(700);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+                    if(morse[i].compareTo("/") == 0) prgs += 700;
                     else{
-                        playSequence(code[j]);
-                        try {
-                            Thread.sleep(300);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
+                        String[] sequence = code[j].split("");
+                        for (int x=0;x< sequence.length;x++)
+                        {
+                                switch (sequence[x]) {
+                                    case ".":
+                                        prgs += 100;
+                                        break;
+                                    case "-":
+                                        prgs += 300;
+                                        break;
+                                    default:
+                                        break;
+                                }
                         }
+                        prgs += 300;
                     }
-
                     break;
                 }
             }
         }
-
+        progressBar.setMax(prgs);
     }
+
+
+
+
+
 
     private void playSequence(String code)  {
         String[] sequence = code.split("");
@@ -114,9 +163,11 @@ public class EncodeActivity extends AppCompatActivity {
                 switch (sequence[i]) {
                     case ".":
                         Thread.sleep(100);
+                        progressBar.setProgress(progressBar.getProgress() + 100);
                         break;
                     case "-":
                         Thread.sleep(300);
+                        progressBar.setProgress(progressBar.getProgress() + 300);
                         break;
                     default:
                         break;
@@ -182,7 +233,12 @@ public class EncodeActivity extends AppCompatActivity {
         }
         if(res.length() == 0) res = "nieprawidłowe dane wejściowe";
         result.setText(res);
-        textView.setText("");
+//        textView.setText("");
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private boolean copyText(){
@@ -198,6 +254,7 @@ public class EncodeActivity extends AppCompatActivity {
     @Override
     protected void onPause(){
         super.onPause();
+        xd.interrupt();
         Log.i(TAG, "onPause");
     }
 
@@ -209,12 +266,14 @@ public class EncodeActivity extends AppCompatActivity {
     @Override
     protected void onStop(){
         super.onStop();
+        xd.interrupt();
         Log.i(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy(){
         super.onDestroy();
+        xd.interrupt();
         Log.i(TAG, "onDestroy");
     }
 
